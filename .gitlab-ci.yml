@@ -1,0 +1,44 @@
+stages:
+  - build
+  - style-test
+  - integration-test
+  - deploy
+
+build:
+  stage: build
+  script:
+    - cd src/cat
+    - make
+    - cd ../grep
+    - make
+  artifacts:
+    paths:
+      - src/cat
+      - src/grep
+    expire_in: 30 days 
+
+style-test:
+  stage: style-test
+  script:
+    - bash src/style-test.sh
+
+integration-test:
+  stage: integration-test
+  script:
+    - cd src/cat
+    - bash cat.sh
+    - cd ../grep
+    - bash grep.sh
+  dependencies:
+    - build
+    - style-test
+
+deploy:
+  stage: deploy
+  when: manual
+  script:
+    - bash src/deploy.sh
+  dependencies:
+    - build
+    - style-test
+    - integration-test
